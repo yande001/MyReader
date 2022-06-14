@@ -64,7 +64,7 @@ fun ReaderLoginScreen(
             UserForm(){ email, pwd->
                 Log.d("ReaderLoginScreen", "email: $email, pwd: $pwd")
                 viewModel.signInWithEmailAndPassword(email = email, password =  pwd){
-                    navController.navigate(ReaderScreens.ReaderHoneScreen.name)
+                    navController.navigate(ReaderScreens.ReaderHomeScreen.name)
                 }
             }
         } else{
@@ -73,7 +73,7 @@ fun ReaderLoginScreen(
                 isCreateAccount = true
             ){email, pwd->
                 viewModel.createUserWithEmailAndPassword(email = email, password = pwd){
-                    navController.navigate(ReaderScreens.ReaderHoneScreen.name)
+                    navController.navigate(ReaderScreens.ReaderHomeScreen.name)
                 }
             }
         }

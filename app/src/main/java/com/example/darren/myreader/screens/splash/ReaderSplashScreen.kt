@@ -50,7 +50,7 @@ fun ReaderSplashScreen(
         if(FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
             navController.navigate(ReaderScreens.LoginScreen.name)
         } else{
-            navController.navigate(ReaderScreens.ReaderHoneScreen.name)
+            navController.navigate(ReaderScreens.ReaderHomeScreen.name)
         }
     }
 

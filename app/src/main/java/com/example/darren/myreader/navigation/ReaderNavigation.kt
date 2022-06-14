@@ -1,12 +1,16 @@
 package com.example.darren.myreader.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.darren.myreader.screens.account.ReaderCreateAccountScreen
 import com.example.darren.myreader.screens.details.ReaderBookDetailsScreen
+import com.example.darren.myreader.screens.home.HomeScreenViewModel
 import com.example.darren.myreader.screens.home.ReaderHomeScreen
 import com.example.darren.myreader.screens.login.ReaderLoginScreen
 import com.example.darren.myreader.screens.search.BookSearchViewModel
@@ -25,14 +29,24 @@ fun ReaderNavigation() {
         composable(ReaderScreens.SplashScreen.name){
             ReaderSplashScreen(navController = navController)
         }
-        composable(ReaderScreens.ReaderHoneScreen.name){
-            ReaderHomeScreen(navController = navController)
+        composable(ReaderScreens.ReaderHomeScreen.name){
+            val homeViewModel = hiltViewModel<HomeScreenViewModel>()
+            ReaderHomeScreen(navController = navController, viewModel = homeViewModel)
         }
         composable(ReaderScreens.CreateAccountScreen.name){
             ReaderCreateAccountScreen(navController = navController)
         }
-        composable(ReaderScreens.DetailsScreen.name){
-            ReaderBookDetailsScreen(navController = navController)
+        val detailName = ReaderScreens.DetailsScreen.name
+        composable(
+            route = "$detailName/{bookId}",
+            arguments = listOf(navArgument("bookId"){
+                type = NavType.StringType
+            })
+        ){
+            backStackEntry ->
+            backStackEntry.arguments?.getString("bookId").let {
+                ReaderBookDetailsScreen(navController = navController, bookId = it.toString())
+            }
         }
         composable(ReaderScreens.LoginScreen.name){
             ReaderLoginScreen(navController = navController)
@@ -44,8 +58,17 @@ fun ReaderNavigation() {
         composable(ReaderScreens.ReaderStatsScreen.name){
             ReaderStatsScreen(navController = navController)
         }
-        composable(ReaderScreens.UpdateScreen.name){
-            ReaderUpdateScreen(navController = navController)
+        val updateName = ReaderScreens.UpdateScreen.name
+        composable(
+            route = "$updateName/{googleBookId}",
+            arguments = listOf(navArgument("googleBookId"){
+                type = NavType.StringType
+            })
+        ){
+            backStackEntry ->
+            backStackEntry.arguments?.getString("googleBookId").let {
+                ReaderUpdateScreen(navController = navController, googleBookId = it.toString())
+            }
         }
     }
 }

@@ -33,6 +33,7 @@ import com.example.darren.myreader.model.MBook
 import com.example.darren.myreader.screens.login.InputField
 import com.example.darren.myreader.R
 import com.example.darren.myreader.model.Item
+import com.example.darren.myreader.navigation.ReaderScreens
 
 @Preview
 @Composable
@@ -48,7 +49,7 @@ fun ReaderSearchScreen(
                 icon = Icons.Default.ArrowBack,
                 showProfile = false
             ){
-                navController.popBackStack()
+                navController.navigate(ReaderScreens.ReaderHomeScreen.name)
             }
         } 
     ) {
@@ -146,7 +147,7 @@ fun BookRow(item: Item, navController: NavHostController) {
             .padding(8.dp)
             .height(125.dp)
             .clickable {
-
+                navController.navigate(ReaderScreens.DetailsScreen.name + "/${item.id}")
             },
         shape = RectangleShape,
         elevation = 6.dp
@@ -161,7 +162,7 @@ fun BookRow(item: Item, navController: NavHostController) {
             val imgUrl: String = if (item.volumeInfo.imageLinks != null) {
                 item.volumeInfo.imageLinks.thumbnail
             } else {
-                "https://img.icons8.com/ios-filled/250/undefined/android-os.png"
+                "https://img.icons8.com/external-flat-icons-inmotus-design/67/undefined/external-android-android-ui-flat-icons-inmotus-design-18.png"
             }
 
 

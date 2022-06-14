@@ -1,5 +1,6 @@
 package com.example.darren.myreader.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -12,6 +13,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,16 +29,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
 import com.example.darren.myreader.R
 import com.example.darren.myreader.components.ReaderAppBar
+import com.example.darren.myreader.data.DataOrException
 import com.example.darren.myreader.model.MBook
 import com.example.darren.myreader.navigation.ReaderScreens
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
-fun ReaderHomeScreen(navController: NavHostController) {
+fun ReaderHomeScreen(
+    navController: NavHostController,
+    viewModel: HomeScreenViewModel = hiltViewModel()
+) {
     Scaffold(
         topBar = {
             ReaderAppBar(
@@ -53,22 +63,31 @@ fun ReaderHomeScreen(navController: NavHostController) {
                 .padding(it)
                 .fillMaxSize()
         ) {
-            HomeContent(navController = navController)
+            HomeContent(
+                navController = navController,
+                viewModel = viewModel
+            )
         }
     }
 }
 
 @Composable
 fun HomeContent(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    viewModel: HomeScreenViewModel
 ){
-    val listOfBooks = listOf<MBook>(
-        MBook(id = "bk001", title = "Book One", authors = "Author One", notes = "Good morning."),
-        MBook(id = "bk002", title = "Book Two", authors = "Author One", notes = "Good morning."),
-        MBook(id = "bk003", title = "Book Three", authors = "Author One", notes = "Good morning."),
-        MBook(id = "bk004", title = "Book Four", authors = "Author One", notes = "Good morning."),
-        MBook(id = "bk005", title = "Book Five", authors = "Author One", notes = "Good morning.")
-    )
+    var listOfBooks = emptyList<MBook>()
+    val currentUser = FirebaseAuth.getInstance().currentUser
+
+
+    if(!viewModel.data.value.data.isNullOrEmpty()){
+        listOfBooks = viewModel.data.value.data!!.toList()!!.filter { mBook ->
+            mBook.userId == currentUser?.uid.toString()
+        }
+        Log.d("ReaderHomeScreen","HomeContent: $listOfBooks")
+    }
+
+
     val currentUserName
     = if(!FirebaseAuth.getInstance().currentUser?.email.isNullOrEmpty()){
         FirebaseAuth.getInstance().currentUser?.email?.split("@")?.get(0)
@@ -110,12 +129,15 @@ fun HomeContent(
                 }
             }
         }
-        ReadingRightNowArea(books = listOf(), navController = navController)
+        ReadingRightNowArea(books = listOfBooks, navController = navController)
         TitleSection(label = "Reading List")
         BookListArea(listOfBooks = listOfBooks, navController = navController)
     }
 
 }
+
+
+
 
 @Composable
 fun BookListArea(
@@ -123,7 +145,9 @@ fun BookListArea(
     navController: NavHostController
 ) {
     HorizontalScrollableComponent(listOfBooks){
-        //TODO: go to detail
+        googleBookId ->
+        Log.d("ReaderHomeScreen/HorizontalScrollableComponent",googleBookId)
+        navController.navigate(ReaderScreens.UpdateScreen.name + "/$googleBookId")
     }
 }
 
@@ -142,7 +166,8 @@ fun HorizontalScrollableComponent(
     ){
         for(book in listOfBooks){
             ListCard(book){
-                onCardPressed(it)
+                googleBookId ->
+                onCardPressed(googleBookId)
             }
         }
 
@@ -175,7 +200,9 @@ fun ReadingRightNowArea(
     books: List<MBook>,
     navController: NavHostController
 ){
-    ListCard()
+    if(books.isNotEmpty()){
+        ListCard(books[0])
+    }
 
 }
 
@@ -198,15 +225,9 @@ fun TitleSection(
     }
 }
 
-@Preview
 @Composable
 fun ListCard(
-    book: MBook = MBook(
-        id = "A103",
-        title = "Secret",
-        authors = "JK",
-        notes = "Hello world"
-    ),
+    book: MBook ,
     onPressDetails: (String) -> Unit = {}
 ){
     val context = LocalContext.current
@@ -221,7 +242,7 @@ fun ListCard(
             .height(242.dp)
             .width(202.dp)
             .clickable {
-                onPressDetails.invoke(book.title.toString())
+                onPressDetails.invoke(book.googleBookId.toString())
             },
         backgroundColor = Color.White,
         shape = RoundedCornerShape(25.dp),
@@ -233,14 +254,15 @@ fun ListCard(
             horizontalAlignment = Alignment.Start
         ) {
             Row(horizontalArrangement = Arrangement.Center) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                AsyncImage(
+                    model = book.photoUrl.toString(),
                     contentDescription = "",
                     modifier = Modifier
                         .height(140.dp)
                         .width(100.dp)
                         .padding(4.dp)
                 )
+
                 Spacer(modifier = Modifier.width(50.dp))
 
                 Column(
@@ -274,7 +296,9 @@ fun ListCard(
                 modifier = Modifier
                     .padding(4.dp)
                     .padding(start = 8.dp),
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.caption,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
             )
             Row(
                 horizontalArrangement = Arrangement.End,
