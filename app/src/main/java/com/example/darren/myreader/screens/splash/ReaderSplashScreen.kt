@@ -18,6 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -25,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.darren.myreader.navigation.ReaderScreens
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
+import com.example.darren.myreader.R
 
 @Preview
 @Composable
@@ -55,42 +60,51 @@ fun ReaderSplashScreen(
     }
 
 
-    Column(
+    Surface(
         modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        color = Color.White
     ) {
-        Surface(
-            modifier = Modifier
-                .size(330.dp)
-                .scale(scale.value),
-            shape = CircleShape,
-            color = Color.White,
-            border = BorderStroke(
-                width = 2.dp,
-                color = Color.LightGray
-            )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Column(
-                modifier = Modifier.padding(8.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-
+            Surface(
+                modifier = Modifier
+                    .size(330.dp)
+                    .scale(scale.value),
+                shape = CircleShape,
+                color = Color.White,
+                border = BorderStroke(
+                    width = 4.dp,
+                    color = colorResource(id = R.color.palettes_4)
+                ),
             ) {
-                Text(
-                    text = "My Reader",
-                    style = MaterialTheme.typography.h3,
-                    color = Color.Red.copy(alpha = 0.6f)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "\"Read. Change. Yourself.\"",
-                    style = MaterialTheme.typography.subtitle1,
-                    color = Color.Gray.copy(alpha = 0.6f)
-                )
+                Column(
+                    modifier = Modifier.padding(8.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+
+                ) {
+                    Text(
+                        text = "My Reader",
+                        style = MaterialTheme.typography.h3,
+                        color = colorResource(id = R.color.palettes_1),
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "\"Fly high into knowledge\"",
+                        style = MaterialTheme.typography.subtitle1,
+                        color = colorResource(id = R.color.palettes_4),
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+
             }
 
         }
-
     }
+
+
 }

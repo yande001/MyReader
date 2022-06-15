@@ -1,6 +1,7 @@
 package com.example.darren.myreader.screens.login
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.rememberScrollableState
@@ -24,7 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +51,7 @@ fun ReaderLoginScreen(
     val showLoginForm = rememberSaveable{
         mutableStateOf(true)
     }
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,23 +62,45 @@ fun ReaderLoginScreen(
         Text(
             text = "My Reader",
             style = MaterialTheme.typography.h3,
-            color = Color.Red.copy(alpha = 0.6f)
+            color = colorResource(id = R.color.palettes_1)
         )
         if (showLoginForm.value){
             UserForm(){ email, pwd->
                 Log.d("ReaderLoginScreen", "email: $email, pwd: $pwd")
-                viewModel.signInWithEmailAndPassword(email = email, password =  pwd){
-                    navController.navigate(ReaderScreens.ReaderHomeScreen.name)
-                }
+                viewModel.signInWithEmailAndPassword(
+                    email = email,
+                    password =  pwd,
+                    home = {
+                        navController.navigate(ReaderScreens.ReaderHomeScreen.name)
+                    },
+                    error = {
+                        Toast.makeText(
+                            context,
+                            "Wrong Email or Password",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                )
             }
         } else{
             UserForm(
                 loading = false,
                 isCreateAccount = true
             ){email, pwd->
-                viewModel.createUserWithEmailAndPassword(email = email, password = pwd){
-                    navController.navigate(ReaderScreens.ReaderHomeScreen.name)
-                }
+                viewModel.createUserWithEmailAndPassword(
+                    email = email,
+                    password = pwd,
+                    home = {
+                        navController.navigate(ReaderScreens.ReaderHomeScreen.name)
+                    },
+                    error ={
+                        Toast.makeText(
+                            context,
+                            "Account Already Existed",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))

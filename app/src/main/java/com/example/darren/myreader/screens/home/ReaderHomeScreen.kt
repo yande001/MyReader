@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +62,7 @@ fun ReaderHomeScreen(
         Surface(
             modifier = Modifier
                 .padding(it)
-                .fillMaxSize()
+                .fillMaxSize(),
         ) {
             HomeContent(
                 navController = navController,
@@ -100,12 +101,16 @@ fun HomeContent(
     ) {
         Row(
             modifier = Modifier
-                .align(alignment = Alignment.Start)
                 .padding(8.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+
         ) {
             TitleSection(label = "Your reading \n" + " activity right now...")
-            Spacer(modifier = Modifier.fillMaxWidth(0.7f))
-            Column {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Icon(imageVector = Icons.Filled.AccountCircle,
                     contentDescription = "",
                     modifier = Modifier
@@ -115,22 +120,20 @@ fun HomeContent(
                         },
                     tint = MaterialTheme.colors.secondaryVariant
                 )
-                Column() {
-                    Text(
-                        text = currentUserName!!,
-                        modifier = Modifier.padding(2.dp),
-                        style = MaterialTheme.typography.overline,
-                        color = Color.Red,
-                        fontSize = 15.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Clip
-                    )
-//                    Divider()
-                }
+
+                Text(
+                    text = currentUserName!!,
+                    style = MaterialTheme.typography.overline,
+                    color = Color.Blue.copy(alpha = 0.8f),
+                    fontSize = 15.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip
+                )
+
             }
         }
         ReadingRightNowArea(books = listOfBooks, navController = navController)
-        TitleSection(label = "Book List")
+        TitleSection(label = "Book List", modifier = Modifier.padding(start = 6.dp))
         BookListArea(listOfBooks = listOfBooks, navController = navController)
     }
 
@@ -304,7 +307,7 @@ fun ListCard(
                         contentDescription = "",
                         modifier = Modifier.padding(bottom = 1.dp)
                     )
-                    BookRating()
+                    book.rating?.let { BookRating(it) }
 
 
                 }
@@ -356,7 +359,7 @@ fun ListCard(
 }
 
 @Composable
-fun BookRating(score: Double = 4.5){
+fun BookRating(score: Double = 0.0){
     Surface(
         modifier = Modifier
             .height(70.dp)

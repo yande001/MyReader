@@ -26,6 +26,7 @@ import com.example.darren.myreader.model.MBook
 import com.example.darren.myreader.screens.home.HomeScreenViewModel
 import com.example.darren.myreader.screens.search.BookRow
 import com.example.darren.myreader.screens.search.BookSearchViewModel
+import com.example.darren.myreader.utils.formatDate
 import com.google.firebase.auth.FirebaseAuth
 import java.util.*
 
@@ -198,25 +199,25 @@ fun StatsBookRow(
             ) {
                 Text(
                     text = book.title.toString(),
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    style = MaterialTheme.typography.h6
                 )
                 Text(
-                    text = "Author: ${book.authors}",
+                    text = "finished: ${book.finishedReading?.let { formatDate(it) }}",
                     overflow = TextOverflow.Clip,
-                    style = MaterialTheme.typography.caption,
-                    fontStyle = FontStyle.Italic
+                    style = MaterialTheme.typography.subtitle1
                 )
                 Text(
-                    text = "Date: ${book.publishedDate}",
-                    overflow = TextOverflow.Clip,
-                    style = MaterialTheme.typography.caption,
-                    fontStyle = FontStyle.Italic
+                    text = "review: ${book.notes}",
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2,
+                    style = MaterialTheme.typography.subtitle1,
                 )
                 Text(
-                    text = "${book.categories}",
+                    text = "rating: ${book.rating?.toInt().toString()}/5",
                     overflow = TextOverflow.Clip,
-                    style = MaterialTheme.typography.caption,
-                    fontStyle = FontStyle.Italic
+                    style = MaterialTheme.typography.subtitle1
                 )
             }
         }

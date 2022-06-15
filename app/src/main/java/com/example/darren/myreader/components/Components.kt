@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,7 @@ fun ReaderAppBar(
                 Spacer(modifier = Modifier.width(20.dp))
                 Text(
                     text = title,
-                    color = Color.Red.copy(alpha = 0.9f),
+                    color = colorResource(id = R.color.palettes_1),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 )
@@ -87,7 +88,7 @@ fun ReaderAppBar(
             }
 
         },
-        backgroundColor = Color.Transparent,
+        backgroundColor = colorResource(id = R.color.palettes_2),
         elevation = 0.dp
     )
 }

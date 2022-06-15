@@ -23,7 +23,8 @@ class LoginScreenViewModel: ViewModel() {
     fun signInWithEmailAndPassword(
         email: String,
         password: String,
-        home: () -> Unit
+        home: () -> Unit,
+        error: () -> Unit
     ) = viewModelScope.launch {
         try {
             auth.signInWithEmailAndPassword(email, password)
@@ -31,10 +32,9 @@ class LoginScreenViewModel: ViewModel() {
                         task ->
                     if (task.isSuccessful){
                         Log.d("LoginScreenViewModel","signInWithEmailAndPassword ${task.result.toString()}")
-                        //TODO("take them home")
                         home()
                     } else{
-                        Log.d("LoginScreenViewModel","signInWithEmailAndPassword: ${task.result.toString()}")
+                        error()
                     }
 
                 }
@@ -47,7 +47,8 @@ class LoginScreenViewModel: ViewModel() {
     fun createUserWithEmailAndPassword(
         email: String,
         password: String,
-        home: () -> Unit
+        home: () -> Unit,
+        error: () -> Unit
     )= viewModelScope.launch {
         if(_loading.value == false){
             _loading.value = true
@@ -59,7 +60,7 @@ class LoginScreenViewModel: ViewModel() {
                         createUser(displayName)
                         home()
                     } else{
-                        Log.d("LoginScreenViewModel","createUserWithEmailAndPassword: ${task.result.toString()}")
+                        error()
                     }
                 }
             _loading.value = false

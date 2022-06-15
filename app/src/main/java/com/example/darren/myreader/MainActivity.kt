@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.darren.myreader.navigation.ReaderNavigation
 import com.example.darren.myreader.ui.theme.MyReaderTheme
@@ -38,7 +39,6 @@ class MainActivity : ComponentActivity() {
 fun ReaderApp(){
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colors.background
     ) {
         ReaderNavigation()
     }

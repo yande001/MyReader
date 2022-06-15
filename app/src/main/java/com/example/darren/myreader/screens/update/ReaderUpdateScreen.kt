@@ -251,7 +251,7 @@ fun ShowSimpleForm(
     navController: NavHostController
 ){
     val notesText = remember{
-        mutableStateOf("")
+        mutableStateOf(book.notes.toString())
     }
     val isStartedReading = remember{
         mutableStateOf(false)
@@ -260,7 +260,7 @@ fun ShowSimpleForm(
         mutableStateOf(false)
     }
     val ratingVal = remember{
-        mutableStateOf(0)
+        mutableStateOf(book.rating)
     }
     val context = LocalContext.current
 
@@ -327,7 +327,7 @@ fun ShowSimpleForm(
     Text(text = "Rating", modifier = Modifier.padding(bottom = 3.dp))
     book.rating?.toInt().let {
         RatingBar(rating = it!!) { rating ->
-            ratingVal.value = rating
+            ratingVal.value = rating.toDouble()
             Log.d("TAG", "ShowSimpleForm: ${ratingVal.value}")
         }
     }
@@ -337,7 +337,7 @@ fun ShowSimpleForm(
         verticalAlignment = Alignment.CenterVertically
     ) {
         val changedNotes = book.notes != notesText.value
-        val changedRating = book.rating?.toInt() != ratingVal.value
+        val changedRating = book.rating != ratingVal.value
         val isFinishedTimeStamp =
             if (isFinishedReading.value) Timestamp.now()
             else book.finishedReading
