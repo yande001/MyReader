@@ -125,12 +125,12 @@ fun HomeContent(
                         maxLines = 1,
                         overflow = TextOverflow.Clip
                     )
-                    Divider()
+//                    Divider()
                 }
             }
         }
         ReadingRightNowArea(books = listOfBooks, navController = navController)
-        TitleSection(label = "Reading List")
+        TitleSection(label = "Book List")
         BookListArea(listOfBooks = listOfBooks, navController = navController)
     }
 
@@ -144,7 +144,13 @@ fun BookListArea(
     listOfBooks: List<MBook>,
     navController: NavHostController
 ) {
-    HorizontalScrollableComponent(listOfBooks){
+    val addedBooks = listOfBooks.filter {
+        mBook ->
+        mBook.startedReading == null && mBook.finishedReading == null
+    }
+
+
+    HorizontalScrollableComponent(addedBooks){
         googleBookId ->
         Log.d("ReaderHomeScreen/HorizontalScrollableComponent",googleBookId)
         navController.navigate(ReaderScreens.UpdateScreen.name + "/$googleBookId")
@@ -154,6 +160,7 @@ fun BookListArea(
 @Composable
 fun HorizontalScrollableComponent(
     listOfBooks: List<MBook>,
+    viewModel: HomeScreenViewModel = hiltViewModel(),
     onCardPressed: (String) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
@@ -164,12 +171,28 @@ fun HorizontalScrollableComponent(
             .heightIn(280.dp)
             .horizontalScroll(scrollState)
     ){
-        for(book in listOfBooks){
-            ListCard(book){
-                googleBookId ->
-                onCardPressed(googleBookId)
+        if (viewModel.data.value.loading == true){
+            CircularProgressIndicator()
+        } else{
+            if (listOfBooks.isEmpty()){
+                Surface(modifier = Modifier.padding(23.dp)) {
+                    Text(
+                        text = "No books founded.",
+                        color = Color.Red.copy(alpha = 0.5f),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+            } else{
+                for(book in listOfBooks){
+                    ListCard(book){
+                            googleBookId ->
+                        onCardPressed(googleBookId)
+                    }
+                }
             }
         }
+
 
     }
 }
@@ -200,9 +223,15 @@ fun ReadingRightNowArea(
     books: List<MBook>,
     navController: NavHostController
 ){
-    if(books.isNotEmpty()){
-        ListCard(books[0])
+    val readingNowList = books.filter {
+        mBook ->
+        mBook.startedReading != null && mBook.finishedReading == null
     }
+    HorizontalScrollableComponent(listOfBooks = readingNowList){
+        googleBookId ->
+        navController.navigate(ReaderScreens.UpdateScreen.name + "/$googleBookId")
+    }
+
 
 }
 
@@ -300,12 +329,23 @@ fun ListCard(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1
             )
+
+            val isStartedReading = remember {
+                mutableStateOf(false)
+            }
+
             Row(
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.Bottom,
                 modifier = Modifier.fillMaxSize()
             ) {
-                RoundedButton(label = "Reading", radius = 60)
+                isStartedReading.value = book.startedReading != null
+                RoundedButton(
+                    label =
+                        if (isStartedReading.value) "Reading"
+                        else "Unread",
+                    radius = 60
+                )
             }
 
         }

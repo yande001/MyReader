@@ -1,6 +1,7 @@
 package com.example.darren.myreader.screens.update
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +20,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,12 +28,17 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.darren.myreader.components.RatingBar
 import com.example.darren.myreader.components.ReaderAppBar
+import com.example.darren.myreader.components.ShowAlertDialog
 import com.example.darren.myreader.data.DataOrException
 import com.example.darren.myreader.model.MBook
 import com.example.darren.myreader.navigation.ReaderScreens
 import com.example.darren.myreader.screens.home.HomeScreenViewModel
+import com.example.darren.myreader.screens.home.RoundedButton
 import com.example.darren.myreader.screens.login.InputField
 import com.example.darren.myreader.utils.formatDate
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun ReaderUpdateScreen(
@@ -73,7 +80,7 @@ fun ReaderUpdateScreen(
                 } else{
                     val book = viewModel.data.value.data!!.first{
                             mBook ->
-                        mBook.googleBookId == googleBookId
+                        (mBook.userId == FirebaseAuth.getInstance().currentUser?.uid) && (mBook.googleBookId == googleBookId)
                     }
                     Surface(
                         modifier = Modifier
@@ -93,10 +100,7 @@ fun ReaderUpdateScreen(
                         navController = navController
                     )
 
-                    StartReadingRow(book)
-                    RatingArea(book){
 
-                    }
 
 
                 }
@@ -240,20 +244,164 @@ fun BookCard(book: MBook, onPressDetails: () -> Unit){
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ShowSimpleForm(
     book: MBook,
     navController: NavHostController
 ){
-    val noteText = remember{
+    val notesText = remember{
         mutableStateOf("")
     }
+    val isStartedReading = remember{
+        mutableStateOf(false)
+    }
+    val isFinishedReading = remember{
+        mutableStateOf(false)
+    }
+    val ratingVal = remember{
+        mutableStateOf(0)
+    }
+    val context = LocalContext.current
+
     SimpleForm(
         defaultValue = if (book.notes.toString().isNotEmpty()) book.notes.toString()
             else "No thoughts available"
     ){
-        note ->
-        noteText.value = note
+        notes ->
+        notesText.value = notes
+    }
+
+    Row(
+        modifier = Modifier
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        TextButton(
+            onClick = {
+                isStartedReading.value = true
+            },
+            enabled = book.startedReading == null
+        ) {
+            if(book.startedReading == null){
+                if (!isStartedReading.value){
+                    Text(text = "Start Reading")
+                } else{
+                    Text(
+                        text = "Started Reading",
+                        modifier = Modifier,
+                        color = Color.Red.copy(alpha = 0.5f)
+                    )
+                }
+            } else{
+                Text("Started on: ${formatDate(book.startedReading!!)}")
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            TextButton(
+                onClick = {
+                    isFinishedReading.value = true
+                },
+                enabled = book.finishedReading == null,
+            ) {
+                if (book.finishedReading == null) {
+                    if (!isFinishedReading.value) {
+                        Text(text = "Mark as Read")
+                    }else {
+                        Text(
+                            text = "Finish Reading",
+                            modifier = Modifier,
+                            color = Color.Red.copy(alpha = 0.5f)
+                        )
+                    }
+                }else {
+                    Text(text = "Finished on: ${formatDate(book.finishedReading!!)}")
+                }
+
+            }
+
+        }
+
+    }
+
+    Text(text = "Rating", modifier = Modifier.padding(bottom = 3.dp))
+    book.rating?.toInt().let {
+        RatingBar(rating = it!!) { rating ->
+            ratingVal.value = rating
+            Log.d("TAG", "ShowSimpleForm: ${ratingVal.value}")
+        }
+    }
+
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val changedNotes = book.notes != notesText.value
+        val changedRating = book.rating?.toInt() != ratingVal.value
+        val isFinishedTimeStamp =
+            if (isFinishedReading.value) Timestamp.now()
+            else book.finishedReading
+        val isStartedTimeStamp =
+            if (isStartedReading.value) Timestamp.now()
+            else book.startedReading
+        val bookUpdate = changedNotes || changedRating || isStartedReading.value || isFinishedReading.value
+        val bookToUpdate = hashMapOf(
+            "finished_reading_at" to isFinishedTimeStamp,
+            "started_reading_at" to isStartedTimeStamp,
+            "rating" to ratingVal.value,
+            "notes" to notesText.value).toMap()
+        RoundedButton(
+            label = "Update"
+        ){
+            if(bookUpdate){
+                FirebaseFirestore.getInstance()
+                    .collection("books")
+                    .document(book.id!!)
+                    .update(bookToUpdate)
+                    .addOnCompleteListener {
+                        task ->
+                        Log.d("ReaderUpdateScreen/ShowSimpleForm","OnComplete: ${task.result.toString()}")
+                        Toast.makeText(
+                            context,
+                            "Updated Successfully",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        navController.navigate(ReaderScreens.ReaderHomeScreen.name)
+                    }
+                    .addOnFailureListener {
+                        exception ->
+                        Log.d("ReaderUpdateScreen/ShowSimpleForm","OnFailure: $exception")
+                    }
+            }
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+        val openDialog = remember{
+            mutableStateOf(false)
+        }
+        if (openDialog.value){
+            ShowAlertDialog(
+                message = "Are you sure you want to delete this book?",
+                openDialog = openDialog
+            ) {
+                FirebaseFirestore.getInstance()
+                    .collection("books")
+                    .document(book.id!!)
+                    .delete()
+                    .addOnCompleteListener {
+                        if(it.isSuccessful){
+                            openDialog.value = false
+                            navController.navigate(ReaderScreens.ReaderHomeScreen.name)
+                        }
+                    }
+
+            }
+        }
+
+        RoundedButton(
+            label = "Delete"
+        ){
+            openDialog.value = true
+        }
     }
 
 

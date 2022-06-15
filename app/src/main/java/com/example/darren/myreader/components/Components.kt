@@ -6,11 +6,8 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.MenuBook
@@ -142,5 +139,32 @@ fun RatingBar(
                 tint = if (i <= ratingState) Color(0xFFFFD700) else Color(0xFFA2ADB1)
             )
         }
+    }
+}
+
+@Composable
+fun ShowAlertDialog(
+    message: String,
+    openDialog: MutableState<Boolean>,
+    onYesPressed: () -> Unit
+){
+    if (openDialog.value) {
+        AlertDialog(onDismissRequest = { openDialog.value = false},
+            title = { Text(text = "Delete Book")},
+            text = { Text(text = message)},
+            buttons = {
+                Row(modifier = Modifier.padding(all = 8.dp),
+                    horizontalArrangement = Arrangement.Center) {
+                    TextButton(onClick = { onYesPressed.invoke() }) {
+                        Text(text = "Yes")
+
+                    }
+                    TextButton(onClick = { openDialog.value = false }) {
+                        Text(text = "No")
+
+                    }
+
+                }
+            })
     }
 }

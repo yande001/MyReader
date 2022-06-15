@@ -116,7 +116,7 @@ fun SearchForm(
 @Composable
 fun BookList(
     navController: NavHostController,
-    viewModel: BookSearchViewModel = hiltViewModel()
+    viewModel: BookSearchViewModel = hiltViewModel(),
 ){
     val listOfBooks = viewModel.list
     if (listOfBooks.isNotEmpty()){
@@ -199,7 +199,6 @@ fun BookRow(item: Item, navController: NavHostController) {
                     fontStyle = FontStyle.Italic
                 )
 
-                //TODO: add more fields later
 
             }
         }
